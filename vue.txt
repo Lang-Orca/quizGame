@@ -1,0 +1,146 @@
+voici un peu les folw que je veux : 
+(online(- creer une partie (nom->auto generated code 6digits alpha numeriques); -se connecter à une partie(code)); ofline (-greer un salon(code), seconnecter à un salon (scan les salons actifs sur le lan sur lequel on est connecté et on se connecte en 1 click ou alors erreur , connecté vous au wifi commun)). le maitre boucle le salon (via 1 bouton) et cela auto genere les equipes (les equipes doivent etre formé le plus equitablebent possible et le nombre d'equipe doivent suffire à faire un tournoi (2, 4 , 8; 16, .......) l'equipe qui a le moins de membre obtient un bonnus de consolation par  membre en moins. ensuite pour les questions , le maitre peut choisir parmis les questionnaires publics, ou généré via un pdf uploadé. (le pdf esttraité localement et non uploadé vers la bd ) les questions sont genere avec les reponses mais tant que la partie n'est pas terminé il reste verouillé et innacceccible meme pas par le maitre de salon . 
+
+
+Les mécaniques de jeu (comme le bonus de consolation pour l'équilibrage ou le verrouillage anti-triche des questions) apportent une vraie valeur ajoutée au projet.Avant de pouvoir concevoir l'architecture technique exacte ou de vous proposer du code, j'ai effectivement 5 questions clés à vous poser pour valider la faisabilité de certains choix :1. Sur le traitement du PDF "100% local"Vous spécifiez que le PDF est traité localement sans être uploadé vers la base de données.Ma question : Souhaitez-vous que l'extraction du texte et l'IA tournent entièrement en local sur le téléphone du maître (via un modèle d'IA ultra-léger embarqué sur l'appareil) ? Ou le maître possède-t-il une clé API (OpenAI/Gemini) pour envoyer uniquement le texte extrait à un modèle distant, avant de récupérer et stocker les questions directement dans sa base sqflite locale ?2. Sur l'équilibrage des équipes (Exemple concret)Imaginons que 10 joueurs se connectent. Pour faire un arbre de tournoi valide, l'application doit générer 8 équipes (puisque 4 équipes ne suffiraient pas à occuper les places si on veut un format strict, et 16 c'est trop). Dans ce cas précis :Préfère-t-on faire 8 équipes (6 équipes de 1 joueur et 2 équipes de 2 joueurs) pour remplir l'arbre de 8 ?Ou préfère-t-on faire 4 équipes (2 équipes de 3 joueurs et 2 équipes de 2 joueurs) et utiliser un système de "Bye" (une équipe qualifiée d'office pour le premier tour car l'arbre à 4 est trop petit mais l'arbre à 8 a des places vides) ?3. Sur le Bonus de ConsolationMa question : Quelle forme prend ce bonus lors du duel ? Est-ce un bonus de points de départ pour le champion de la petite équipe, un droit à l'erreur (une seconde chance sur une mauvaise réponse), ou du temps supplémentaire pour répondre ?4. Sur le mode Offline (Découverte LAN)Le scan en 1-click sur le réseau local est une excellente idée de parcours utilisateur.Ma question : Est-ce que le maître du salon doit obligatoirement avoir une connexion Internet au moment de générer les questions via le PDF (pour interroger l'IA), ou toute la phase de création du questionnaire doit se faire en amont lorsqu'il a du réseau, pour que la partie de jeu devienne ensuite 100% autonome et coupée du monde en WiFi local ?
+
+: : 1 non . si le maitre n'est pas connecté (traité le texte extrait, il ne pourras pas generer de questions . le texte seras extrait mais il y auras une erreur (vous devez etre connecté pour generer des qyestions.)
+2. 4 equipe de preference
+3les bonnus ce sont des points supplementaires
+4non . il n'as besoins d'etre connecté que pour la generation de questions . d'autre questions?
+
+C'est parfait, les règles du jeu sont maintenant verrouillées. Vos précisions apportent une excellente rigueur technique et une mécanique de jeu très équitable (le bonus de points pour compenser le sous-nombre).
+Pour que vous ayez la vision la plus claire possible avant de coder, voici comment implémenter concrètement vos 3 mécaniques clés :
+## 1. L'Algorithme de Répartition et de Bonus (Algorithme du Maître)
+Lorsque le maître clique sur "Boucler le salon", l'application exécute cette logique mathématique précise :
+
+   1. Déterminer le nombre d'équipes $N$ : Pour $X$ participants, l'application choisit la puissance de 2 immédiatement inférieure ou égale (dans votre cas, vous ciblez 4 équipes).
+   2. Distribution équitable : L'algorithme distribue les joueurs un par un dans les équipes pour maximiser l'équilibre.
+   * Exemple avec 10 joueurs : Équipe 1 (3 joueurs), Équipe 2 (3 joueurs), Équipe 3 (2 joueurs), Équipe 4 (2 joueurs). [1] 
+   3. Calcul du Bonus : L'application repère la taille maximale d'une équipe (ici 3 joueurs).
+   * L'Équipe 1 et 2 ont 3 joueurs $\rightarrow$ 0 point de bonus.
+      * L'Équipe 3 et 4 ont 2 joueurs (il manque 1 membre) $\rightarrow$ +10 points de bonus (par exemple) appliqués d'office au score global de l'équipe ou à leur champion lors du duel.
+   
+## 2. Le Système de Sécurité anti-triche (Verrouillage du Questionnaire)
+Pour garantir qu'aucun joueur (ni même le maître) ne puisse lire les réponses à l'avance, la base de données sqflite appliquera un statut strict :
+
+* Structure de la table Questionnaires : Elle contient un champ statut (valeurs : 'verrouille', 'deverrouille').
+* Pendant la génération (Online) : Le document est traité, l'IA renvoie les questions. Elles sont immédiatement insérées dans sqflite avec le statut 'verrouille'.
+* Côté Code (Sécurité) : Les écrans de consultation des questionnaires filtrent strictement les données. Si un questionnaire a le statut 'verrouille', l'application refuse d'afficher son contenu à l'écran, affichant simplement un cadenas 🔒.
+* Fin de partie : Dès que le tournoi affiche son écran de fin, le statut passe à 'deverrouille'. Le questionnaire devient accessible dans l'historique pour révision.
+
+## 3. Le Parcours Technique de Connexion (Online vs Offline)
+Voici comment l'application gère les deux tunnels de connexion de manière fluide :
+
+[Écran d'Accueil]
+   │
+   ├──► MODE ONLINE ──────► [Créer] ──► Génère Code 6 caractères (ex: AB79X2) via Firebase/Supabase
+   │                        [Rejoindre] ◄─ Saisir le code
+   │
+   └──► MODE OFFLINE ─────► [Créer Salon Local] ──► Démarre un serveur HTTP/Websocket local + NSD (Bonjour)
+                            [Rejoindre Local] ───► Scan le LAN ──► Trouve le service NSD ──► Connexion 1-click
+                                                                        │
+                                                                        └──► (Échec ? -> Alerte "Connectez-vous au même WiFi")
+
+------------------------------
+
+Excellent choix technologique. React Native CLI offre des performances optimales pour la gestion du réseau local, et la combinaison MMKV/SQLite répond parfaitement aux différents besoins de stockage.
+Pour votre base de données locale (Offline), je vous conseille de combiner les deux : MMKV pour les données légères et rapides (sessions de jeu en cours, configuration de l'appareil) et SQLite (react-native-quick-sqlite ou expo-sqlite en CLI) pour les données relationnelles volumineuses (vos tables de questions, l'historique et les classements).
+Voici comment structurer techniquement votre projet avec vos choix technologiques.
+------------------------------
+## 🗄️ Architecture des Données Locales (SQLite)
+Voici le schéma SQLite à implémenter. Le champ statut de la table questionnaires bloque l'accès aux données tant qu'il n'est pas configuré sur 'termine'.
+
+-- Table des questionnaires (Générés par l'IA ou publics téléchargés)CREATE TABLE questionnaires (
+    id TEXT PRIMARY KEY, -- UUID
+    titre TEXT NOT NULL,
+    date_creation INTEGER NOT NULL,
+    statut TEXT CHECK(statut IN ('verrouille', 'termine')) DEFAULT 'verrouille'
+);
+-- Table des questions (Contenu masqué par l'application si le statut est 'verrouille')CREATE TABLE questions (
+    id TEXT PRIMARY KEY,
+    questionnaire_id TEXT NOT NULL,
+    texte_question TEXT NOT NULL,
+    options TEXT NOT NULL, -- Tableau JSON sérialisé : ["Rép A", "Rép B", "Rép C"]
+    reponse_correcte TEXT NOT NULL,
+    FOREIGN KEY (questionnaire_id) REFERENCES questionnaires(id) ON DELETE CASCADE
+);
+-- Table de l'historique des parties terminéesCREATE TABLE historique_parties (
+    id TEXT PRIMARY KEY,
+    date_partie INTEGER NOT NULL,
+    nom_questionnaire TEXT NOT NULL,
+    equipe_gagnante TEXT NOT NULL
+);
+-- Table du classement général des joueurs (Scores cumulés au fil des parties)CREATE TABLE classement_joueurs (
+    pseudo TEXT PRIMARY KEY,
+    points_totaux INTEGER DEFAULT 0,
+    parties_jouees INTEGER DEFAULT 0,
+    victoires INTEGER DEFAULT 0
+);
+
+------------------------------
+## 🧮 Algorithme de Répartition et Calcul des Bonus
+Voici la logique JavaScript/TypeScript à exécuter côté Maître de salon lorsque la session est bouclée. Cet algorithme calcule le nombre optimal d'équipes (puissance de 2) et attribue le bonus de compensation.
+
+interface Joueur {
+  id: string;
+  pseudo: string;
+}
+interface Equipe {
+  id: string;
+  nom: string;
+  membres: Joueur[];
+  bonusPoints: number;
+}
+function genererTournoi(listeJoueurs: Joueur[]): Equipe[] {
+  const X = listeJoueurs.length;
+  if (X < 2) throw new Error("Il faut au moins 2 joueurs pour démarrer.");
+
+  // 1. Déterminer le nombre d'équipes N (Puissance de 2 immédiatement inférieure ou égale)
+  // Si 10 joueurs -> Math.floor(log2(10)) = 3 -> 2^3 = 8 équipes de base
+  // Mais selon vos préférences de flux, on peut forcer un plancher minimal (ex: 2 ou 4 équipes min si possible)
+  let N = Math.pow(2, Math.floor(Math.log2(X)));
+  if (N > 16) N = 16; // Limite optionnelle pour ne pas disperser les joueurs
+
+  // Initialisation des équipes
+  const equipes: Equipe[] = Array.from({ length: N }, (_, i) => ({
+    id: `equipe_${i + 1}`,
+    nom: `Équipe ${i + 1}`,
+    membres: [],
+    bonusPoints: 0,
+  }));
+
+  // 2. Distribution équitable des joueurs (Round-Robin)
+  // On mélange les joueurs aléatoirement avant la distribution
+  const joueurs Melanges = [...listeJoueurs].sort(() => Math.random() - 0.5);
+  joueursMelanges.forEach((joueur, index) => {
+    const cibleEquipe = index % N;
+    equipes[cibleEquipe].membres.push(joueur);
+  });
+
+  // 3. Calcul du Bonus de Consolation pour les équipes en sous-nombre
+  // On trouve la taille de la plus grande équipe formée
+  const tailleMax = Math.max(...equipes.map(e => e.membres.length));
+  const VALEUR_BONUS_PAR_MEMBRE_MANQUANT = 10; // À ajuster selon votre équilibrage
+
+  equipes.forEach(equipe => {
+    const membresManquants = tailleMax - equipe.membres.length;
+    if (membresManquants > 0) {
+      equipe.bonusPoints = membresManquants * VALEUR_BONUS_PAR_MEMBRE_MANQUANT;
+    }
+  });
+
+  return equipes;
+}
+
+------------------------------
+## 🌐 Flux de Synchronisation (Firebase vs LAN)
+Pour l'implémentation de la connectivité dans votre application React Native CLI :
+
+* En Ligne (Firebase Realtime Database) :
+Le Maître crée un nœud /sessions/CODE6D. Les participants écoutent ce nœud via .on('value', ...). Lorsque le Maître clique sur verrouiller, il calcule les équipes localement avec l'algorithme ci-dessus et pousse la structure de l'arbre du tournoi sur Firebase pour que tous les téléphones mettent à jour leur affichage instantanément.
+* Hors Ligne (LAN local) :
+Vous utiliserez des librairies de socket (comme react-native-tcp-socket ou des serveurs HTTP légers en natif) couplées à un protocole ZeroConf/NSD (comme react-native-zeroconf). Le Maître diffuse sa présence sur le réseau local. Les téléphones clients scannent, découvrent l'adresse IP du Maître et s'y connectent en un clic via une connexion WebSocket locale.
+
+Pour passer à l'écriture des modules, préférez-vous que l'on mette en place le prompt IA structuré pour générer les questions au format JSON compatible avec votre table SQLite, ou l'implémentation de la découverte réseau locale (ZeroConf/NSD) en React Native ?
+

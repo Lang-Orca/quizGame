@@ -673,7 +673,7 @@ interface WsMessage {
 
 | Sprint | Packages à installer |
 |--------|---------------------|
-| S0 | `@react-navigation/native`, `@react-navigation/native-stack`, `react-native-screens`, `react-native-quick-sqlite`, `react-native-mmkv`, `uuid`, `zod` |
+| S0 | `@react-navigation/native`, `@react-navigation/native-stack`, `react-native-screens`, `react-native-quick-sqlite`, `react-native-mmkv`, `react-native-nitro-modules`, `uuid`, `zod` |
 | S1 | — (tests Jest existants) |
 | S2 | — |
 | S3 | — |

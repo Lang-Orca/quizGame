@@ -1,7 +1,11 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, StyleSheet, Text, View} from 'react-native';
 
+import {PublicCatalogRepository} from '@/data/sqlite/PublicCatalogRepository';
+import type {CachedPublicQuestionnaire} from '@/types/catalog';
 import {useHostGame} from '@/ui/host/HostGameContext';
+
+const catalogRepo = new PublicCatalogRepository();
 
 function roundLabel(roundIndex: number, totalRounds: number): string {
   const fromEnd = totalRounds - 1 - roundIndex;
@@ -18,12 +22,17 @@ function roundLabel(roundIndex: number, totalRounds: number): string {
 }
 
 export function QuestionnaireSelectScreen() {
-  const {coverage, prepareAllMissing} = useHostGame();
+  const {coverage, prepareAllMissing, assignQuestionnaireToNext} = useHostGame();
+  const [cached, setCached] = useState<CachedPublicQuestionnaire[]>([]);
   const totalRounds = coverage.length;
   const totalMissing = coverage.reduce(
     (acc, c) => acc + (c.needed - c.available),
     0,
   );
+
+  useEffect(() => {
+    setCached(catalogRepo.getAllCached());
+  }, []);
 
   return (
     <View style={styles.card}>
@@ -57,6 +66,27 @@ export function QuestionnaireSelectScreen() {
       ) : (
         <Text style={styles.ok}>Tous les rounds sont couverts.</Text>
       )}
+
+      {cached.length > 0 ? (
+        <View style={styles.publicsBlock}>
+          <Text style={styles.title}>Questionnaires publics téléchargés</Text>
+          {cached.map(item => (
+            <View key={item.firebaseId} style={styles.publicRow}>
+              <View style={styles.publicInfo}>
+                <Text style={styles.publicTitre}>{item.titre}</Text>
+                <Text style={styles.publicMeta}>
+                  {item.nb_questions} questions
+                  {item.auteur ? ` · ${item.auteur}` : ''}
+                </Text>
+              </View>
+              <Button
+                title="Prochain duel"
+                onPress={() => assignQuestionnaireToNext(item.localId)}
+              />
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -99,5 +129,27 @@ const styles = StyleSheet.create({
   ok: {
     fontSize: 13,
     color: '#16a34a',
+  },
+  publicsBlock: {
+    marginTop: 12,
+    gap: 8,
+  },
+  publicRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  publicInfo: {
+    flex: 1,
+  },
+  publicTitre: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  publicMeta: {
+    fontSize: 12,
+    color: '#64748b',
   },
 });

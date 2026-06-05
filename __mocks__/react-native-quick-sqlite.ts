@@ -20,7 +20,7 @@ const tables: Record<string, Row[]> = {
 let transactionBackup: typeof tables | null = null;
 
 function getTableFromSql(sql: string): string | null {
-  const insert = sql.match(/INSERT\s+INTO\s+(\w+)/i);
+  const insert = sql.match(/INSERT(?:\s+OR\s+\w+)?\s+INTO\s+(\w+)/i);
   if (insert) return insert[1];
   const update = sql.match(/UPDATE\s+(\w+)/i);
   if (update) return update[1];
@@ -81,7 +81,7 @@ function runSql(sql: string, params: unknown[] = []): MockResult {
     return makeResult([]);
   }
 
-  if (normalized.startsWith('INSERT INTO')) {
+  if (/^INSERT(\s+OR\s+\w+)?\s+INTO/i.test(normalized)) {
     const table = getTableFromSql(sql);
     if (!table) return makeResult([]);
 
@@ -105,6 +105,17 @@ function runSql(sql: string, params: unknown[] = []): MockResult {
     if (!tables[table]) {
       tables[table] = [];
     }
+
+    // INSERT OR REPLACE : remplace une ligne existante de même clé primaire (id).
+    const isReplace = /^INSERT\s+OR\s+REPLACE/i.test(normalized);
+    if (isReplace && 'id' in row) {
+      const existingIndex = tables[table].findIndex(r => r.id === row.id);
+      if (existingIndex >= 0) {
+        tables[table][existingIndex] = row;
+        return makeResult([]);
+      }
+    }
+
     tables[table].push(row);
     return makeResult([]);
   }

@@ -1,3 +1,5 @@
+import {ClassementRepository} from '@/data/sqlite/ClassementRepository';
+import {HistoriqueRepository} from '@/data/sqlite/HistoriqueRepository';
 import {initDatabase, resetDatabaseForTests} from '@/data/sqlite/database';
 import {HOST_TOKEN} from '@/data/sqlite/hostToken';
 import {QuestionnaireRepository} from '@/data/sqlite/QuestionnaireRepository';
@@ -228,6 +230,25 @@ describe('HostGameEngine', () => {
       .filter((id): id is string => Boolean(id));
     expect(ids).toHaveLength(3);
     expect(new Set(ids).size).toBe(3);
+    engine.disconnect();
+  });
+
+  it('journalise l historique et met à jour le classement en fin de partie (S10)', async () => {
+    const {engine, sync} = await setupLockedGame(4);
+
+    playUntilFinished(engine, sync);
+
+    const historique = new HistoriqueRepository().getAll();
+    expect(historique).toHaveLength(1);
+    expect(historique[0].mode).toBe('lan');
+    expect(historique[0].equipe_gagnante).toBeTruthy();
+
+    const classement = new ClassementRepository().getAll();
+    // 4 joueurs, chacun a joué une partie.
+    expect(classement).toHaveLength(4);
+    expect(classement.every(c => c.parties_jouees === 1)).toBe(true);
+    // Au moins un joueur a remporté la partie.
+    expect(classement.some(c => c.victoires === 1)).toBe(true);
     engine.disconnect();
   });
 });

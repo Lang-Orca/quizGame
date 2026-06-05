@@ -20,6 +20,22 @@ export function HomeScreen({navigation}: Props) {
           title="Mode Offline (LAN)"
           onPress={() => navigation.navigate('PlaceholderOffline')}
         />
+        <Button
+          title="Questionnaire depuis un PDF (IA)"
+          onPress={() => navigation.navigate('PdfUpload')}
+        />
+        <Button
+          title="Catalogue public"
+          onPress={() => navigation.navigate('PublicList')}
+        />
+        <Button
+          title="Historique"
+          onPress={() => navigation.navigate('History')}
+        />
+        <Button
+          title="Paramètres"
+          onPress={() => navigation.navigate('Settings')}
+        />
       </View>
     </View>
   );

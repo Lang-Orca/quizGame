@@ -189,6 +189,80 @@ export class QuestionnaireRepository {
     );
   }
 
+  listByPartie(partieId: string): QuestionnaireMeta[] {
+    const db = getDb();
+    const result = db.execute(
+      `SELECT id, partie_id, titre, date_creation, statut, source, is_public, duel_id, round_index
+       FROM questionnaires WHERE partie_id = ?`,
+      [partieId],
+    );
+    const metas: QuestionnaireMeta[] = [];
+    if (!result.rows) {
+      return metas;
+    }
+    for (let i = 0; i < result.rows.length; i += 1) {
+      const row = result.rows.item(i);
+      metas.push({
+        id: row.id as string,
+        partie_id: row.partie_id as string | null,
+        titre: row.titre as string,
+        date_creation: Number(row.date_creation),
+        statut: row.statut as QuestionnaireMeta['statut'],
+        source: row.source as QuestionnaireMeta['source'],
+        is_public: Boolean(row.is_public),
+        duel_id: row.duel_id as string | null,
+        round_index:
+          row.round_index === null || row.round_index === undefined
+            ? null
+            : Number(row.round_index),
+      });
+    }
+    return metas;
+  }
+
+  /**
+   * Questions + réponses correctes pour révision. Autorisé uniquement quand le
+   * questionnaire est `termine` (après la fin de la partie).
+   */
+  getQuestionsForReview(questionnaireId: string): QuestionHostView[] {
+    if (!this.isQuestionnaireAccessible(questionnaireId)) {
+      throw new Error('Questionnaire non révisable : la partie n’est pas terminée.');
+    }
+    return this.getQuestionsForHost(questionnaireId, HOST_TOKEN);
+  }
+
+  listPublicByPartie(partieId: string): QuestionnaireMeta[] {
+    const db = getDb();
+    const result = db.execute(
+      `SELECT id, partie_id, titre, date_creation, statut, source, is_public, duel_id, round_index
+       FROM questionnaires WHERE partie_id = ? AND is_public = 1`,
+      [partieId],
+    );
+
+    const metas: QuestionnaireMeta[] = [];
+    if (!result.rows) {
+      return metas;
+    }
+    for (let i = 0; i < result.rows.length; i += 1) {
+      const row = result.rows.item(i);
+      metas.push({
+        id: row.id as string,
+        partie_id: row.partie_id as string | null,
+        titre: row.titre as string,
+        date_creation: Number(row.date_creation),
+        statut: row.statut as QuestionnaireMeta['statut'],
+        source: row.source as QuestionnaireMeta['source'],
+        is_public: Boolean(row.is_public),
+        duel_id: row.duel_id as string | null,
+        round_index:
+          row.round_index === null || row.round_index === undefined
+            ? null
+            : Number(row.round_index),
+      });
+    }
+    return metas;
+  }
+
   deverrouillerQuestionnaires(partieId: string): void {
     const db = getDb();
     db.execute(

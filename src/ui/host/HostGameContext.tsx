@@ -7,15 +7,17 @@ import React, {
   useState,
 } from 'react';
 
+import {FirebaseSessionSync} from '@/sync/FirebaseSessionSync';
 import {InMemorySessionSync} from '@/sync/InMemorySessionSync';
 import {LanSessionSync} from '@/sync/LanSessionSync';
 import {HostGameEngine} from '@/services/HostGameEngine';
 import type {EngineState} from '@/services/HostGameEngine';
+import {PublicCatalogService} from '@/services/PublicCatalogService';
 import {seedQuestionnaires} from '@/services/seedQuestionnaires';
 import type {SessionSync} from '@/sync/SessionSync';
 import type {Equipe} from '@/types/equipe';
 
-export type HostTransport = 'memory' | 'lan';
+export type HostTransport = 'memory' | 'lan' | 'firebase';
 
 const PSEUDOS = [
   'Alex',
@@ -47,6 +49,7 @@ interface HostGameContextValue {
   startNextMatch: () => void;
   prepareNextDuelQuestionnaire: () => void;
   prepareAllMissing: () => void;
+  assignQuestionnaireToNext: (questionnaireId: string) => void;
   nextQuestion: () => void;
   forceReveal: () => void;
   simulateRandomAnswers: () => void;
@@ -69,13 +72,18 @@ export function HostGameProvider({
   const engineRef = useRef<HostGameEngine | null>(null);
 
   if (!syncRef.current) {
-    syncRef.current =
-      transport === 'lan' ? new LanSessionSync() : new InMemorySessionSync();
+    if (transport === 'firebase') {
+      syncRef.current = new FirebaseSessionSync();
+    } else if (transport === 'lan') {
+      syncRef.current = new LanSessionSync();
+    } else {
+      syncRef.current = new InMemorySessionSync();
+    }
   }
   if (!engineRef.current) {
     engineRef.current = new HostGameEngine({
       sync: syncRef.current,
-      mode: 'lan',
+      mode: transport === 'firebase' ? 'online' : 'lan',
     });
   }
 
@@ -85,6 +93,7 @@ export function HostGameProvider({
 
   const [state, setState] = useState<EngineState>(engine.getState());
   const [startError, setStartError] = useState<string | null>(null);
+  const publishedRef = useRef(false);
 
   useEffect(() => {
     const unsubscribe = engine.subscribe(setState);
@@ -96,6 +105,22 @@ export function HostGameProvider({
       engine.disconnect();
     };
   }, [engine, sessionName]);
+
+  // S9 : en fin de partie online, publier les questionnaires `is_public`.
+  useEffect(() => {
+    if (
+      transport !== 'firebase' ||
+      state.phase !== 'finished' ||
+      !state.partieId ||
+      publishedRef.current
+    ) {
+      return;
+    }
+    publishedRef.current = true;
+    new PublicCatalogService()
+      .publishPartiePublics(state.partieId, null)
+      .catch(() => undefined);
+  }, [transport, state.phase, state.partieId]);
 
   const value = useMemo<HostGameContextValue>(() => {
     const memorySync =
@@ -167,6 +192,15 @@ export function HostGameProvider({
         }
         const [seeded] = seedQuestionnaires(partieId, 1);
         engine.assignQuestionnaire(match.id, seeded.id);
+        setStartError(null);
+        refreshState();
+      },
+      assignQuestionnaireToNext: (questionnaireId: string) => {
+        const match = engine.peekNextMatch();
+        if (!match) {
+          return;
+        }
+        engine.assignQuestionnaire(match.id, questionnaireId);
         setStartError(null);
         refreshState();
       },

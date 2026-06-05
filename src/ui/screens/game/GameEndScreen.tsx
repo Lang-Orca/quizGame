@@ -1,7 +1,10 @@
 import React from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import {useHostGame} from '@/ui/host/HostGameContext';
+import type {RootStackParamList} from '@/ui/navigation/types';
 
 interface Props {
   onQuit: () => void;
@@ -9,6 +12,8 @@ interface Props {
 
 export function GameEndScreen({onQuit}: Props) {
   const {state} = useHostGame();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const vainqueur = state.classement.find(
     c => c.equipeId === state.vainqueurTournoiId,
   );
@@ -31,7 +36,13 @@ export function GameEndScreen({onQuit}: Props) {
         ))}
       </View>
 
-      <Button title="Retour à l'accueil" onPress={onQuit} />
+      <View style={styles.actions}>
+        <Button
+          title="Voir l'historique"
+          onPress={() => navigation.navigate('History')}
+        />
+        <Button title="Retour à l'accueil" onPress={onQuit} />
+      </View>
     </ScrollView>
   );
 }
@@ -58,6 +69,10 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: 8,
+  },
+  actions: {
+    gap: 10,
+    marginTop: 8,
   },
   row: {
     flexDirection: 'row',

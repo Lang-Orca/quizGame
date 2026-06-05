@@ -4,6 +4,8 @@ import {QUESTIONS_PAR_DUEL, TIMER_DEFAULT_SECONDS} from '@/constants';
 import {avancerBracket, genererBracket, getMatchsEnAttente} from '@/domain/bracket';
 import {calculerVainqueurDuel} from '@/domain/scoring';
 import {genererEquipes} from '@/domain/teams';
+import {ClassementRepository} from '@/data/sqlite/ClassementRepository';
+import {HistoriqueRepository} from '@/data/sqlite/HistoriqueRepository';
 import {PartieRepository} from '@/data/sqlite/PartieRepository';
 import {QuestionnaireRepository} from '@/data/sqlite/QuestionnaireRepository';
 import {HostQuestionService} from '@/services/HostQuestionService';
@@ -54,6 +56,8 @@ export interface HostGameEngineDeps {
   timerSeconds?: number;
   partieRepo?: PartieRepository;
   questionnaireRepo?: QuestionnaireRepository;
+  historiqueRepo?: HistoriqueRepository;
+  classementRepo?: ClassementRepository;
   hostQuestionService?: HostQuestionService;
   /** Notifié quand un duel n'a aucun questionnaire assigné (S6). */
   onQuestionnaireNeeded?: (match: Match) => void;
@@ -76,7 +80,10 @@ export class HostGameEngine {
   private readonly timerSeconds: number;
   private readonly partieRepo: PartieRepository;
   private readonly questionnaireRepo: QuestionnaireRepository;
+  private readonly historiqueRepo: HistoriqueRepository;
+  private readonly classementRepo: ClassementRepository;
   private readonly hostQuestionService: HostQuestionService;
+  private lastQuestionnaireId: string | null = null;
   private readonly onQuestionnaireNeeded?: (match: Match) => void;
 
   private state: EngineState = {
@@ -112,6 +119,8 @@ export class HostGameEngine {
     this.partieRepo = deps.partieRepo ?? new PartieRepository();
     this.questionnaireRepo =
       deps.questionnaireRepo ?? new QuestionnaireRepository();
+    this.historiqueRepo = deps.historiqueRepo ?? new HistoriqueRepository();
+    this.classementRepo = deps.classementRepo ?? new ClassementRepository();
     this.hostQuestionService =
       deps.hostQuestionService ?? new HostQuestionService();
     this.onQuestionnaireNeeded = deps.onQuestionnaireNeeded;
@@ -198,6 +207,7 @@ export class HostGameEngine {
     }
 
     match.questionnaireId = questionnaireId;
+    this.lastQuestionnaireId = questionnaireId;
     this.questionnaireRepo.assignToDuel(
       questionnaireId,
       match.id,
@@ -494,12 +504,50 @@ export class HostGameEngine {
     this.state.vainqueurTournoiId = vainqueurId;
     this.state.classement = classement;
 
+    this.persistHistoryAndRanking(vainqueurId);
+
     this.sync.broadcastGameEnd({
       vainqueurEquipeId: vainqueurId,
       classement,
     });
 
     this.setPhase('finished');
+  }
+
+  /** S10 : journalise la partie dans l'historique et met à jour le classement. */
+  private persistHistoryAndRanking(vainqueurId: string): void {
+    if (!this.state.partieId) {
+      return;
+    }
+
+    const partie = this.partieRepo.getPartie(this.state.partieId);
+    const vainqueur = this.findEquipe(vainqueurId);
+    const nomQuestionnaire = this.lastQuestionnaireId
+      ? this.questionnaireRepo.getQuestionnaireMeta(this.lastQuestionnaireId)
+          ?.titre ?? 'Questionnaire'
+      : 'Questionnaire';
+
+    try {
+      this.historiqueRepo.insertHistorique({
+        id: uuidv4(),
+        partie_id: this.state.partieId,
+        date_partie: Date.now(),
+        nom_partie: partie?.nom ?? 'Partie',
+        nom_questionnaire: nomQuestionnaire,
+        equipe_gagnante: vainqueur?.nom ?? 'Vainqueur',
+        mode: this.mode,
+      });
+
+      this.state.equipes.forEach(equipe => {
+        const points = this.cumulativeScores[equipe.id] ?? 0;
+        const won = equipe.id === vainqueurId;
+        equipe.membres.forEach(membre => {
+          this.classementRepo.recordResult(membre.pseudo, points, won);
+        });
+      });
+    } catch {
+      // La persistance de l'historique ne doit pas bloquer la fin de partie.
+    }
   }
 
   private buildClassement(vainqueurId: string): ClassementEntry[] {

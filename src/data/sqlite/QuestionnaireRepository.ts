@@ -168,6 +168,27 @@ export class QuestionnaireRepository {
     return questions;
   }
 
+  countQuestions(questionnaireId: string): number {
+    const db = getDb();
+    const result = db.execute(
+      'SELECT id FROM questions WHERE questionnaire_id = ?',
+      [questionnaireId],
+    );
+    return result.rows ? result.rows.length : 0;
+  }
+
+  assignToDuel(
+    questionnaireId: string,
+    duelId: string,
+    roundIndex: number,
+  ): void {
+    const db = getDb();
+    db.execute(
+      'UPDATE questionnaires SET duel_id = ?, round_index = ? WHERE id = ?',
+      [duelId, roundIndex, questionnaireId],
+    );
+  }
+
   deverrouillerQuestionnaires(partieId: string): void {
     const db = getDb();
     db.execute(

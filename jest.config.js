@@ -14,8 +14,8 @@ module.exports = {
       '<rootDir>/__mocks__/firebaseDatabase.ts',
     '^@react-native-firebase/auth$': '<rootDir>/__mocks__/firebaseAuth.ts',
     '^react-native-keychain$': '<rootDir>/__mocks__/react-native-keychain.ts',
-    '^react-native-document-picker$':
-      '<rootDir>/__mocks__/react-native-document-picker.ts',
+    '^@react-native-documents/picker$':
+      '<rootDir>/__mocks__/@react-native-documents/picker.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 };

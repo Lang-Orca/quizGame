@@ -1,4 +1,4 @@
-import DocumentPicker, {types} from 'react-native-document-picker';
+import {pick} from '@react-native-documents/picker';
 
 export interface PdfSelection {
   uri: string;
@@ -44,9 +44,10 @@ export class PdfExtractor {
   constructor(private readonly extractor?: PdfTextExtractor) {}
 
   async pickPdf(): Promise<PdfSelection | null> {
-    const results = await DocumentPicker.pick({
-      type: [types.pdf],
+    const results = await pick({
+      type: ['application/pdf'],
       allowMultiSelection: false,
+      mode: 'import',
     });
     const file = results[0];
     if (!file) {

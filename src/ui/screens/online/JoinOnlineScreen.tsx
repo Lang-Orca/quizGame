@@ -10,6 +10,7 @@ import {isValidCode6} from '@/domain/code';
 import {useClient} from '@/ui/client/ClientContext';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {useColors} from '@/ui/theme';
+import {impactLight} from '@/utils/haptics';
 
 export function JoinOnlineScreen() {
   const colors = useColors();
@@ -73,7 +74,7 @@ export function JoinOnlineScreen() {
 
       <Button
         title="Rejoindre"
-        onPress={rejoindre}
+        onPress={() => { impactLight(); rejoindre(); }}
         disabled={!pseudoPret}
       />
 

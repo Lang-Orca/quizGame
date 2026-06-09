@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {ScrollView, StyleSheet} from 'react-native';
 
 import {QUESTIONS_PAR_DUEL, TIMER_DEFAULT_SECONDS} from '@/constants';
@@ -8,6 +8,7 @@ import {TimerBar} from '@/ui/components/TimerBar';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
 import {useLanClient} from '@/ui/lan/LanClientContext';
+import {notificationSuccess, notificationError} from '@/utils/haptics';
 
 const LETTRES = ['A', 'B', 'C', 'D'];
 
@@ -26,6 +27,16 @@ export function PlayerDuelScreen() {
   const isReveal = state.duelPhase === 'reveal';
   const optionCorrecte = state.lastReveal?.optionCorrecte;
   const aRepondu = state.selectedOption !== null;
+
+  const [hapticsDone, setHapticsDone] = useState(false);
+  if (isReveal && !hapticsDone) {
+    setHapticsDone(true);
+    if (state.selectedOption === optionCorrecte) {
+      notificationSuccess();
+    } else if (state.selectedOption !== null) {
+      notificationError();
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

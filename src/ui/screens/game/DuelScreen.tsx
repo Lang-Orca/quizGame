@@ -8,6 +8,7 @@ import {TimerBar} from '@/ui/components/TimerBar';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
 import {useHostGame} from '@/ui/host/HostGameContext';
+import {notificationSuccess, impactMedium} from '@/utils/haptics';
 
 const LETTRES = ['A', 'B', 'C', 'D'];
 
@@ -78,7 +79,7 @@ export function DuelScreen() {
       ) : (
         <ThemedView style={styles.waitBox}>
           <ThemedText tertiary>En attente des réponses des joueurs…</ThemedText>
-          <Button title="Révéler maintenant" onPress={forceReveal} />
+          <Button title="Révéler maintenant" onPress={() => { impactMedium(); forceReveal(); }} />
         </ThemedView>
       )}
     </ScrollView>

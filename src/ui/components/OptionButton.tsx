@@ -3,6 +3,7 @@ import {Pressable, StyleSheet} from 'react-native';
 
 import {ThemedText} from '@/ui/components/ThemedText';
 import {useColors} from '@/ui/theme';
+import {impactLight} from '@/utils/haptics';
 
 interface Props {
   label: string;
@@ -37,7 +38,10 @@ export function OptionButton({
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        if (!disabled) impactLight();
+        onPress?.();
+      }}
       disabled={disabled}
       style={[
         styles.button,

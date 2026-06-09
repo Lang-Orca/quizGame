@@ -7,6 +7,7 @@ import {ThemedView} from '@/ui/components/ThemedView';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {Icon} from '@/ui/components/Icon';
 import {useColors, spacing, borderRadius} from '@/ui/theme';
+import {selection} from '@/utils/haptics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -39,7 +40,10 @@ export function HomeScreen({navigation}: Props) {
               {backgroundColor: colors.surface, borderColor: colors.cardBorder},
               pressed && {opacity: 0.8},
             ]}
-            onPress={() => navigation.navigate(item.key as any)}>
+            onPress={() => {
+              selection();
+              navigation.navigate(item.key as any);
+            }}>
             <Icon name={item.icon} size={28} />
             <ThemedText size="lg" semibold>
               {item.label}

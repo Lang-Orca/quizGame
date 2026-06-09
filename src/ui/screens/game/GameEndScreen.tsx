@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Button, ScrollView, StyleSheet} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -8,6 +8,7 @@ import type {RootStackParamList} from '@/ui/navigation/types';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
 import {Icon} from '@/ui/components/Icon';
+import {notificationSuccess} from '@/utils/haptics';
 
 interface Props {
   onQuit: () => void;
@@ -15,6 +16,10 @@ interface Props {
 
 export function GameEndScreen({onQuit}: Props) {
   const {state} = useHostGame();
+
+  useEffect(() => {
+    notificationSuccess();
+  }, []);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const vainqueur = state.classement.find(

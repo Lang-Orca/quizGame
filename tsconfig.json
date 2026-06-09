@@ -1,6 +1,22 @@
 {
-  "extends": "@react-native/typescript-config",
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": ["jest", "react-native"],
+    "allowSyntheticDefaultImports": true
     "types": ["jest"],
     "baseUrl": ".",
     "paths": {
@@ -8,5 +24,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/Pods"]
+  "exclude": ["**/node_modules", "**/Pods", "**/__tests__"]
 }

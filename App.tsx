@@ -1,15 +1,52 @@
-import React from 'react';
-import { StatusBar } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AppNavigator from './src/navigation/AppNavigator';
+import React, {useEffect, useState} from 'react';
+import {ActivityIndicator, StatusBar, StyleSheet, useColorScheme, View} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+
+import {initDatabase} from '@/data/sqlite/database';
+import {storage} from '@/data/mmkv/storage';
+import {RootNavigator} from '@/ui/navigation/RootNavigator';
 
 function App() {
+  const isDarkMode = useColorScheme() === 'dark';
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function bootstrap() {
+      try {
+        await initDatabase();
+        storage.pingInit();
+        setReady(true);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Erreur initialisation');
+      }
+    }
+
+    bootstrap();
+  }, []);
+
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a2e" />
-      <AppNavigator />
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {!ready ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : error ? (
+        <View style={styles.loading} />
+      ) : (
+        <RootNavigator />
+      )}
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default App;

@@ -1,0 +1,35 @@
+{
+  "rules": {
+    "sessions": {
+      "$code": {
+        ".read": "auth != null",
+        "meta": {
+          ".write": "auth != null && (!data.exists() || data.child('hostUid').val() === auth.uid)"
+        },
+        "joueurs": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid"
+          }
+        },
+        "events": {
+          ".write": "auth != null && root.child('sessions').child($code).child('meta').child('hostUid').val() === auth.uid"
+        },
+        "reponses": {
+          "$duelId": {
+            "$index": {
+              "$uid": {
+                ".write": "auth != null && $uid === auth.uid"
+              }
+            }
+          }
+        }
+      }
+    },
+    "questionnaires_publics": {
+      ".read": "auth != null",
+      "$id": {
+        ".write": "auth != null && !data.exists()"
+      }
+    }
+  }
+}

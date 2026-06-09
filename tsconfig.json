@@ -17,6 +17,11 @@
     "noEmit": true,
     "types": ["jest", "react-native"],
     "allowSyntheticDefaultImports": true
+    "types": ["jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["**/node_modules", "**/Pods", "**/__tests__"]

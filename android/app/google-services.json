@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "quizgame-placeholder",
-    "firebase_url": "https://quizgame-placeholder-default-rtdb.firebaseio.com",
-    "storage_bucket": "quizgame-placeholder.appspot.com"
+    "project_number": "377665811651",
+    "project_id": "quiz-64f8d",
+    "storage_bucket": "quiz-64f8d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:377665811651:android:c67cf64bd6c288e9125e76",
         "android_client_info": {
           "package_name": "com.quizgame"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyPLACEHOLDER-REPLACE-WITH-REAL-KEY-000"
+          "current_key": "AIzaSyDXZMjuI2SLofXMqbbs7SFAApSuq52_MO4"
         }
       ],
       "services": {

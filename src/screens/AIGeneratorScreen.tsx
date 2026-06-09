@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import anthropicService from '../services/anthropicService';
+import anthropicService from '../services/GeminiService';
 import voiceService from '../services/voiceService';
 import { QuizMode } from '../types';
 

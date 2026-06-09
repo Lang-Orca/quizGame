@@ -11,8 +11,6 @@ import {PublicListScreen} from '@/ui/screens/catalog/PublicListScreen';
 import {CreateLanScreen} from '@/ui/screens/lan/CreateLanScreen';
 import {CreateOnlineScreen} from '@/ui/screens/online/CreateOnlineScreen';
 import {PdfUploadScreen} from '@/ui/screens/host/PdfUploadScreen';
-import {PlaceholderOfflineScreen} from '@/ui/screens/PlaceholderOfflineScreen';
-import {PlaceholderOnlineScreen} from '@/ui/screens/PlaceholderOnlineScreen';
 import {SettingsScreen} from '@/ui/screens/SettingsScreen';
 
 import type {RootStackParamList} from './types';
@@ -27,16 +25,6 @@ export function RootNavigator() {
           name="Home"
           component={HomeScreen}
           options={{title: 'QuizGame'}}
-        />
-        <Stack.Screen
-          name="PlaceholderOnline"
-          component={PlaceholderOnlineScreen}
-          options={{title: 'Online'}}
-        />
-        <Stack.Screen
-          name="PlaceholderOffline"
-          component={PlaceholderOfflineScreen}
-          options={{title: 'Offline LAN'}}
         />
         <Stack.Screen
           name="HostGame"

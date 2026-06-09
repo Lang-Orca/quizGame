@@ -1,10 +1,11 @@
-import React from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import React, {useState} from 'react';
+import {Button, ScrollView, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator} from 'react-native';
 
 import {QUESTIONS_PAR_DUEL, TIMER_DEFAULT_SECONDS} from '@/constants';
 import {OptionButton} from '@/ui/components/OptionButton';
 import {QuestionCard} from '@/ui/components/QuestionCard';
 import {TimerBar} from '@/ui/components/TimerBar';
+import voiceService from '@/services/voiceService';
 
 import {useClient} from './ClientContext';
 
@@ -13,6 +14,7 @@ const LETTRES = ['A', 'B', 'C', 'D'];
 export function ClientDuelScreen() {
   const {state, submitAnswer} = useClient();
   const question = state.question;
+  const [listening, setListening] = useState(false);
 
   if (!question) {
     return (
@@ -25,6 +27,20 @@ export function ClientDuelScreen() {
   const isReveal = state.duelPhase === 'reveal';
   const optionCorrecte = state.lastReveal?.optionCorrecte;
   const aRepondu = state.selectedOption !== null;
+
+  const startVoice = async () => {
+    setListening(true);
+    const spoken = await voiceService.startListening();
+    setListening(false);
+    if (spoken) {
+      const match = voiceService.matchVoiceToChoice(spoken, question.options);
+      if (match) {
+        submitAnswer(match);
+      } else {
+        console.warn(`Aucune option reconnue pour : ${spoken}`);
+      }
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -51,6 +67,18 @@ export function ClientDuelScreen() {
             onPress={() => submitAnswer(option)}
           />
         ))}
+      </View>
+
+      <View style={styles.voiceControls}>
+        {!isReveal && !aRepondu && (
+           <TouchableOpacity 
+             style={[styles.voiceButton, listening && styles.voiceButtonActive]}
+             onPress={listening ? voiceService.stopListening : startVoice}
+             disabled={isReveal || aRepondu}
+           >
+             {listening ? <ActivityIndicator color="#fff" /> : <Text style={styles.voiceButtonText}>🎤 Répondre à la voix</Text>}
+           </TouchableOpacity>
+        )}
       </View>
 
       {isReveal ? (
@@ -80,6 +108,27 @@ const styles = StyleSheet.create({
   },
   options: {
     gap: 10,
+  },
+  voiceControls: {
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  voiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#7c3aed',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  voiceButtonActive: {
+    backgroundColor: '#ef4444',
+  },
+  voiceButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   info: {
     fontSize: 15,

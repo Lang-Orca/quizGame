@@ -12,14 +12,31 @@ export function HomeScreen({navigation}: Props) {
       <Text style={styles.title}>QuizGame</Text>
       <Text style={styles.subtitle}>Choisissez un mode de jeu</Text>
       <View style={styles.buttons}>
+        <Text style={styles.sectionTitle}>Mode Online</Text>
         <Button
-          title="Mode Online"
-          onPress={() => navigation.navigate('PlaceholderOnline')}
+          title="Créer une partie Online"
+          onPress={() => navigation.navigate('CreateOnline')}
         />
         <Button
-          title="Mode Offline (LAN)"
-          onPress={() => navigation.navigate('PlaceholderOffline')}
+          title="Rejoindre une partie Online"
+          onPress={() => navigation.navigate('JoinOnline')}
         />
+        
+        <Text style={styles.sectionTitle}>Mode Offline (LAN)</Text>
+        <Button
+          title="Héberger un salon LAN"
+          onPress={() => navigation.navigate('CreateLan')}
+        />
+        <Button
+          title="Rejoindre un salon LAN"
+          onPress={() => navigation.navigate('JoinLan')}
+        />
+        <Button
+          title="Partie locale (Debug)"
+          onPress={() => navigation.navigate('HostGame')}
+        />
+        
+        <Text style={styles.sectionTitle}>Autres Modes</Text>
         <Button
           title="Questionnaire depuis un PDF (IA)"
           onPress={() => navigation.navigate('PdfUpload')}
@@ -57,6 +74,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
+    marginBottom: 4,
+    color: '#334155',
   },
   buttons: {
     gap: 12,

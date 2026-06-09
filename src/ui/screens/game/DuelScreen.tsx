@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 import {QUESTIONS_PAR_DUEL, TIMER_DEFAULT_SECONDS} from '@/constants';
@@ -6,6 +6,7 @@ import {OptionButton} from '@/ui/components/OptionButton';
 import {QuestionCard} from '@/ui/components/QuestionCard';
 import {TimerBar} from '@/ui/components/TimerBar';
 import {useHostGame} from '@/ui/host/HostGameContext';
+import voiceService from '@/services/voiceService';
 
 const LETTRES = ['A', 'B', 'C', 'D'];
 
@@ -14,6 +15,12 @@ export function DuelScreen() {
     useHostGame();
   const match = state.currentMatch;
   const question = state.question;
+
+  useEffect(() => {
+    if (question && state.duelPhase === 'wait') {
+      voiceService.speak(question.texte);
+    }
+  }, [question?.texte, state.duelPhase]);
 
   if (!match || !question) {
     return (

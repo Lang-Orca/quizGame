@@ -5,6 +5,8 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {initDatabase} from '@/data/sqlite/database';
 import {storage} from '@/data/mmkv/storage';
 import {RootNavigator} from '@/ui/navigation/RootNavigator';
+import {DebugConsole} from '@/ui/components/DebugConsole';
+import voiceService from '@/services/voiceService';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -16,6 +18,7 @@ function App() {
       try {
         await initDatabase();
         storage.pingInit();
+        await voiceService.initialize();
         setReady(true);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Erreur initialisation');
@@ -35,7 +38,10 @@ function App() {
       ) : error ? (
         <View style={styles.loading} />
       ) : (
-        <RootNavigator />
+        <>
+          <RootNavigator />
+          <DebugConsole />
+        </>
       )}
     </SafeAreaProvider>
   );

@@ -12,6 +12,7 @@ import type {QuestionnaireMeta} from '@/types/repository';
 import type {HistoriqueEntry} from '@/types/repository';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
+import {Icon} from '@/ui/components/Icon';
 import {useColors} from '@/ui/theme';
 
 const historiqueRepo = new HistoriqueRepository();
@@ -166,7 +167,7 @@ export function HistoryScreen() {
               {formatDate(entry.date_partie)} · {entry.mode.toUpperCase()}
             </ThemedText>
             <ThemedText success semibold>
-              🏆 {entry.equipe_gagnante}
+              <Icon name="trophy" size={16} color="#16a34a" /> {entry.equipe_gagnante}
             </ThemedText>
             <ThemedText size="xs" tertiary>
               Questionnaire : {entry.nom_questionnaire}

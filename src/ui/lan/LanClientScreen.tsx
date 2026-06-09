@@ -12,6 +12,7 @@ import {ScanLanScreen} from '@/ui/screens/lan/ScanLanScreen';
 import {PlayerDuelScreen} from '@/ui/screens/game/PlayerDuelScreen';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
+import {Icon} from '@/ui/components/Icon';
 
 import {LanClientProvider, useLanClient} from './LanClientContext';
 
@@ -40,9 +41,9 @@ function ClientFinishedView() {
   );
   return (
     <ScrollView contentContainerStyle={styles.finished}>
-      <ThemedText size="display" center>
-        🏆
-      </ThemedText>
+      <ThemedView style={{alignItems: 'center'}}>
+        <Icon name="trophy" size={48} color="#f59e0b" />
+      </ThemedView>
       <ThemedText size="xxl" bold center>
         {vainqueur ? vainqueur.nom : 'Tournoi'} remporte la partie !
       </ThemedText>

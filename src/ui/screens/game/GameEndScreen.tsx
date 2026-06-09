@@ -7,6 +7,7 @@ import {useHostGame} from '@/ui/host/HostGameContext';
 import type {RootStackParamList} from '@/ui/navigation/types';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
+import {Icon} from '@/ui/components/Icon';
 
 interface Props {
   onQuit: () => void;
@@ -22,9 +23,9 @@ export function GameEndScreen({onQuit}: Props) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <ThemedText size="display" center>
-        🏆
-      </ThemedText>
+      <ThemedView style={{alignItems: 'center'}}>
+        <Icon name="trophy" size={48} color="#f59e0b" />
+      </ThemedView>
       <ThemedText size="xxl" bold center>
         {vainqueur ? vainqueur.nom : 'Vainqueur'} remporte le tournoi !
       </ThemedText>

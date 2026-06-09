@@ -14,6 +14,7 @@ import {JoinOnlineScreen} from '@/ui/screens/online/JoinOnlineScreen';
 import {OnlineLobbyScreen} from '@/ui/screens/online/OnlineLobbyScreen';
 import {ThemedText} from '@/ui/components/ThemedText';
 import {ThemedView} from '@/ui/components/ThemedView';
+import {Icon} from '@/ui/components/Icon';
 
 function ConnectingView() {
   return (
@@ -40,9 +41,9 @@ function ClientFinishedView() {
   );
   return (
     <ScrollView contentContainerStyle={styles.finished}>
-      <ThemedText size="display" center>
-        🏆
-      </ThemedText>
+      <ThemedView style={{alignItems: 'center'}}>
+        <Icon name="trophy" size={48} color="#f59e0b" />
+      </ThemedView>
       <ThemedText size="xxl" bold center>
         {vainqueur ? vainqueur.nom : 'Tournoi'} remporte la partie !
       </ThemedText>

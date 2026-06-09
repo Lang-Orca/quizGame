@@ -5,13 +5,15 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
-  Text,
   TextInput,
-  View,
 } from 'react-native';
 
 import {PdfExtractor} from '@/services/PdfExtractor';
 import {QuestionGenerator} from '@/services/QuestionGenerator';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
+import {ThemedCard} from '@/ui/components/ThemedCard';
+import {useColors} from '@/ui/theme';
 
 type Etape = 'idle' | 'extraction' | 'apercu' | 'generation' | 'fini';
 
@@ -19,6 +21,7 @@ const extractor = new PdfExtractor();
 const generator = new QuestionGenerator();
 
 export function PdfUploadScreen() {
+  const colors = useColors();
   const [etape, setEtape] = useState<Etape>('idle');
   const [titre, setTitre] = useState('');
   const [isPublic, setIsPublic] = useState(false);
@@ -67,24 +70,34 @@ export function PdfUploadScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Générer un questionnaire depuis un PDF</Text>
-      <Text style={styles.help}>
+      <ThemedText size="xl" bold>
+        Générer un questionnaire depuis un PDF
+      </ThemedText>
+      <ThemedText size="sm" tertiary>
         Le PDF est lu localement : seul le texte extrait est envoyé à l'IA, le
         fichier n'est jamais uploadé.
-      </Text>
+      </ThemedText>
 
-      <Text style={styles.label}>Titre du questionnaire</Text>
+      <ThemedText semibold size="sm" secondary>
+        Titre du questionnaire
+      </ThemedText>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+        ]}
         value={titre}
         onChangeText={setTitre}
         placeholder="Ex : Chapitre 3 — Réseaux"
+        placeholderTextColor={colors.textMuted}
       />
 
-      <View style={styles.switchRow}>
-        <Text style={styles.label}>Rendre public (catalogue partagé)</Text>
+      <ThemedView style={styles.switchRow}>
+        <ThemedText size="sm" semibold secondary>
+          Rendre public (catalogue partagé)
+        </ThemedText>
         <Switch value={isPublic} onValueChange={setIsPublic} />
-      </View>
+      </ThemedView>
 
       <Button
         title={etape === 'extraction' ? 'Lecture…' : 'Choisir un PDF'}
@@ -93,23 +106,25 @@ export function PdfUploadScreen() {
       />
 
       {etape === 'extraction' || etape === 'generation' ? (
-        <View style={styles.loading}>
+        <ThemedView style={styles.loading}>
           <ActivityIndicator />
-          <Text style={styles.loadingText}>
+          <ThemedText tertiary>
             {etape === 'extraction'
               ? 'Extraction du texte…'
               : 'Génération des questions…'}
-          </Text>
-        </View>
+          </ThemedText>
+        </ThemedView>
       ) : null}
 
       {etape === 'apercu' || etape === 'fini' ? (
-        <View style={styles.card}>
-          <Text style={styles.section}>Aperçu du texte — {nomFichier}</Text>
-          <Text numberOfLines={8} style={styles.preview}>
+        <ThemedCard>
+          <ThemedText semibold size="sm">
+            Aperçu du texte — {nomFichier}
+          </ThemedText>
+          <ThemedText size="sm" secondary numberOfLines={8}>
             {texte}
-          </Text>
-        </View>
+          </ThemedText>
+        </ThemedCard>
       ) : null}
 
       {etape === 'apercu' ? (
@@ -117,12 +132,12 @@ export function PdfUploadScreen() {
       ) : null}
 
       {etape === 'fini' ? (
-        <Text style={styles.success}>
+        <ThemedText success semibold>
           {nbQuestions} questions générées et enregistrées.
-        </Text>
+        </ThemedText>
       ) : null}
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <ThemedText error>{error}</ThemedText> : null}
     </ScrollView>
   );
 }
@@ -132,23 +147,8 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  help: {
-    fontSize: 13,
-    color: '#64748b',
-    lineHeight: 18,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
-  },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
@@ -162,35 +162,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  loadingText: {
-    fontStyle: 'italic',
-    color: '#64748b',
-  },
-  card: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  section: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  preview: {
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 18,
-  },
-  success: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#16a34a',
-  },
-  error: {
-    fontSize: 14,
-    color: '#dc2626',
   },
 });

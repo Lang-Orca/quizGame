@@ -2,9 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 import {HistoriqueRepository} from '@/data/sqlite/HistoriqueRepository';
@@ -12,6 +10,9 @@ import {QuestionnaireRepository} from '@/data/sqlite/QuestionnaireRepository';
 import type {QuestionHostView} from '@/data/sqlite/QuestionnaireRepository';
 import type {QuestionnaireMeta} from '@/types/repository';
 import type {HistoriqueEntry} from '@/types/repository';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
+import {useColors} from '@/ui/theme';
 
 const historiqueRepo = new HistoriqueRepository();
 const questionnaireRepo = new QuestionnaireRepository();
@@ -21,6 +22,7 @@ function formatDate(timestamp: number): string {
 }
 
 export function HistoryScreen() {
+  const colors = useColors();
   const [entries, setEntries] = useState<HistoriqueEntry[]>([]);
   const [selectedPartie, setSelectedPartie] = useState<HistoriqueEntry | null>(
     null,
@@ -70,26 +72,35 @@ export function HistoryScreen() {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity onPress={retour}>
-          <Text style={styles.back}>← Retour</Text>
+          <ThemedText primary semibold>
+            ← Retour
+          </ThemedText>
         </TouchableOpacity>
-        <Text style={styles.title}>{reviewTitre}</Text>
+        <ThemedText size="xxl" bold>
+          {reviewTitre}
+        </ThemedText>
         {reviewQuestions.map((q, i) => (
-          <View key={q.id} style={styles.card}>
-            <Text style={styles.question}>
+          <ThemedView
+            key={q.id}
+            style={[styles.card, {backgroundColor: colors.surface, borderColor: colors.cardBorder}]}>
+            <ThemedText semibold size="sm">
               {i + 1}. {q.texte_question}
-            </Text>
+            </ThemedText>
             {q.options.map((opt, idx) => {
               const correcte = opt === q.reponse_correcte;
               return (
-                <Text
+                <ThemedText
                   key={idx}
-                  style={[styles.option, correcte && styles.correct]}>
+                  size="sm"
+                  secondary={!correcte}
+                  success={correcte}
+                  bold={correcte}>
                   {lettres[idx]}. {opt}
                   {correcte ? '  ✓' : ''}
-                </Text>
+                </ThemedText>
               );
             })}
-          </View>
+          </ThemedView>
         ))}
       </ScrollView>
     );
@@ -99,27 +110,35 @@ export function HistoryScreen() {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity onPress={retour}>
-          <Text style={styles.back}>← Retour</Text>
+          <ThemedText primary semibold>
+            ← Retour
+          </ThemedText>
         </TouchableOpacity>
-        <Text style={styles.title}>{selectedPartie.nom_partie}</Text>
-        <Text style={styles.meta}>
+        <ThemedText size="xxl" bold>
+          {selectedPartie.nom_partie}
+        </ThemedText>
+        <ThemedText size="xs" tertiary>
           Gagnant : {selectedPartie.equipe_gagnante} ·{' '}
           {formatDate(selectedPartie.date_partie)}
-        </Text>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Text style={styles.section}>Questionnaires révisables</Text>
+        </ThemedText>
+        {error ? <ThemedText error>{error}</ThemedText> : null}
+        <ThemedText semibold size="base" secondary style={styles.section}>
+          Questionnaires révisables
+        </ThemedText>
         {questionnaires.length === 0 ? (
-          <Text style={styles.empty}>
-            Aucun questionnaire terminé pour cette partie.
-          </Text>
+          <ThemedText tertiary>Aucun questionnaire terminé pour cette partie.</ThemedText>
         ) : (
           questionnaires.map(meta => (
             <TouchableOpacity
               key={meta.id}
-              style={styles.card}
+              style={[styles.card, {backgroundColor: colors.surface, borderColor: colors.cardBorder}]}
               onPress={() => reviser(meta)}>
-              <Text style={styles.question}>{meta.titre}</Text>
-              <Text style={styles.meta}>Toucher pour réviser</Text>
+              <ThemedText semibold size="sm">
+                {meta.titre}
+              </ThemedText>
+              <ThemedText size="xs" tertiary>
+                Toucher pour réviser
+              </ThemedText>
             </TouchableOpacity>
           ))
         )}
@@ -129,21 +148,29 @@ export function HistoryScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Historique des parties</Text>
+      <ThemedText size="xxl" bold>
+        Historique des parties
+      </ThemedText>
       {entries.length === 0 ? (
-        <Text style={styles.empty}>Aucune partie jouée pour l'instant.</Text>
+        <ThemedText tertiary>Aucune partie jouée pour l'instant.</ThemedText>
       ) : (
         entries.map(entry => (
           <TouchableOpacity
             key={entry.id}
-            style={styles.card}
+            style={[styles.card, {backgroundColor: colors.surface, borderColor: colors.cardBorder}]}
             onPress={() => ouvrirPartie(entry)}>
-            <Text style={styles.question}>{entry.nom_partie}</Text>
-            <Text style={styles.meta}>
+            <ThemedText semibold size="sm">
+              {entry.nom_partie}
+            </ThemedText>
+            <ThemedText size="xs" tertiary>
               {formatDate(entry.date_partie)} · {entry.mode.toUpperCase()}
-            </Text>
-            <Text style={styles.winner}>🏆 {entry.equipe_gagnante}</Text>
-            <Text style={styles.meta}>Questionnaire : {entry.nom_questionnaire}</Text>
+            </ThemedText>
+            <ThemedText success semibold>
+              🏆 {entry.equipe_gagnante}
+            </ThemedText>
+            <ThemedText size="xs" tertiary>
+              Questionnaire : {entry.nom_questionnaire}
+            </ThemedText>
           </TouchableOpacity>
         ))
       )}
@@ -156,56 +183,13 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  back: {
-    fontSize: 15,
-    color: '#2563eb',
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
   section: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#334155',
     marginTop: 8,
   },
   card: {
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 14,
     gap: 4,
-  },
-  question: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  meta: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  winner: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#16a34a',
-  },
-  option: {
-    fontSize: 14,
-    color: '#475569',
-  },
-  correct: {
-    color: '#16a34a',
-    fontWeight: '700',
-  },
-  empty: {
-    fontStyle: 'italic',
-    color: '#64748b',
-  },
-  error: {
-    color: '#dc2626',
   },
 });

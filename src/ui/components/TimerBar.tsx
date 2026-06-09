@@ -1,5 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
+
+import {ThemedText} from '@/ui/components/ThemedText';
+import {useColors} from '@/ui/theme';
 
 interface Props {
   deadline: number | null;
@@ -7,6 +10,7 @@ interface Props {
 }
 
 export function TimerBar({deadline, totalSeconds}: Props) {
+  const colors = useColors();
   const [remaining, setRemaining] = useState(totalSeconds);
 
   useEffect(() => {
@@ -29,11 +33,13 @@ export function TimerBar({deadline, totalSeconds}: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.track}>
-        <View style={[styles.fill, {flex: ratio}]} />
+      <View style={[styles.track, {backgroundColor: colors.timerTrack}]}>
+        <View style={[styles.fill, {backgroundColor: colors.timerFill, flex: ratio}]} />
         <View style={{flex: 1 - ratio}} />
       </View>
-      <Text style={styles.label}>{remaining}s</Text>
+      <ThemedText size="base" bold style={styles.label}>
+        {remaining}s
+      </ThemedText>
     </View>
   );
 }
@@ -48,18 +54,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 12,
     flexDirection: 'row',
-    backgroundColor: '#e2e8f0',
     borderRadius: 6,
     overflow: 'hidden',
   },
-  fill: {
-    backgroundColor: '#2563eb',
-  },
+  fill: {},
   label: {
-    fontSize: 16,
-    fontWeight: '700',
     width: 44,
     textAlign: 'right',
-    color: '#1e293b',
   },
 });

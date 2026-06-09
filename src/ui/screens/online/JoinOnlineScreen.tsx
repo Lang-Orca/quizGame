@@ -3,14 +3,16 @@ import {
   Button,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
 } from 'react-native';
 
 import {isValidCode6} from '@/domain/code';
 import {useClient} from '@/ui/client/ClientContext';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {useColors} from '@/ui/theme';
 
 export function JoinOnlineScreen() {
+  const colors = useColors();
   const {state, connect} = useClient();
   const [pseudo, setPseudo] = useState('');
   const [code, setCode] = useState('');
@@ -30,29 +32,44 @@ export function JoinOnlineScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Rejoindre une partie online</Text>
+      <ThemedText size="xxl" bold>
+        Rejoindre une partie online
+      </ThemedText>
 
-      <Text style={styles.label}>Votre pseudo</Text>
+      <ThemedText size="sm" semibold secondary>
+        Votre pseudo
+      </ThemedText>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+        ]}
         value={pseudo}
         onChangeText={setPseudo}
         placeholder="Ex : Marco"
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="words"
       />
 
-      <Text style={styles.label}>Code de la partie</Text>
+      <ThemedText size="sm" semibold secondary>
+        Code de la partie
+      </ThemedText>
       <TextInput
-        style={[styles.input, styles.code]}
+        style={[
+          styles.input,
+          styles.code,
+          {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+        ]}
         value={code}
         onChangeText={setCode}
         placeholder="4F7K2P"
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="characters"
         autoCorrect={false}
         maxLength={6}
       />
 
-      {localError ? <Text style={styles.error}>{localError}</Text> : null}
+      {localError ? <ThemedText error>{localError}</ThemedText> : null}
 
       <Button
         title="Rejoindre"
@@ -61,9 +78,9 @@ export function JoinOnlineScreen() {
       />
 
       {!pseudoPret ? (
-        <Text style={styles.hint}>Saisissez un pseudo pour rejoindre.</Text>
+        <ThemedText tertiary>Saisissez un pseudo pour rejoindre.</ThemedText>
       ) : null}
-      {state.error ? <Text style={styles.error}>{state.error}</Text> : null}
+      {state.error ? <ThemedText error>{state.error}</ThemedText> : null}
     </ScrollView>
   );
 }
@@ -73,18 +90,8 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
-  },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
@@ -94,12 +101,5 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     textAlign: 'center',
     fontWeight: '700',
-  },
-  hint: {
-    fontStyle: 'italic',
-    color: '#64748b',
-  },
-  error: {
-    color: '#dc2626',
   },
 });

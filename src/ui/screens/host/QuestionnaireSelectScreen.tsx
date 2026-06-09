@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Button, StyleSheet, Text, View} from 'react-native';
+import {Button, StyleSheet} from 'react-native';
 
 import {PublicCatalogRepository} from '@/data/sqlite/PublicCatalogRepository';
 import type {CachedPublicQuestionnaire} from '@/types/catalog';
 import {useHostGame} from '@/ui/host/HostGameContext';
+import {ThemedCard} from '@/ui/components/ThemedCard';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
 
 const catalogRepo = new PublicCatalogRepository();
 
@@ -35,100 +38,78 @@ export function QuestionnaireSelectScreen() {
   }, []);
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Questionnaires par round</Text>
+    <ThemedCard>
+      <ThemedText bold size="base">
+        Questionnaires par round
+      </ThemedText>
       {coverage.map(({roundIndex, needed, available}) => {
         const missing = needed - available;
         return (
-          <View key={roundIndex} style={styles.row}>
-            <Text style={styles.round}>
+          <ThemedView key={roundIndex} style={styles.row}>
+            <ThemedText size="sm" secondary>
               {roundLabel(roundIndex, totalRounds)}
-            </Text>
-            <Text style={[styles.count, missing > 0 && styles.missing]}>
+            </ThemedText>
+            <ThemedText
+              size="sm"
+              semibold
+              success={!missing}
+              error={missing > 0}>
               {available} / {needed}
               {missing > 0 ? ` (${missing} manquant${missing > 1 ? 's' : ''})` : ''}
-            </Text>
-          </View>
+            </ThemedText>
+          </ThemedView>
         );
       })}
 
       {totalMissing > 0 ? (
         <>
-          <Text style={styles.warning}>
+          <ThemedText size="xs" warning>
             En mode LAN offline, chaque duel doit disposer d'un questionnaire
             public pré-caché.
-          </Text>
+          </ThemedText>
           <Button
             title="Préparer les questionnaires publics manquants"
             onPress={prepareAllMissing}
           />
         </>
       ) : (
-        <Text style={styles.ok}>Tous les rounds sont couverts.</Text>
+        <ThemedText size="xs" success>
+          Tous les rounds sont couverts.
+        </ThemedText>
       )}
 
       {cached.length > 0 ? (
-        <View style={styles.publicsBlock}>
-          <Text style={styles.title}>Questionnaires publics téléchargés</Text>
+        <ThemedView style={styles.publicsBlock}>
+          <ThemedText bold size="base">
+            Questionnaires publics téléchargés
+          </ThemedText>
           {cached.map(item => (
-            <View key={item.firebaseId} style={styles.publicRow}>
-              <View style={styles.publicInfo}>
-                <Text style={styles.publicTitre}>{item.titre}</Text>
-                <Text style={styles.publicMeta}>
+            <ThemedView key={item.firebaseId} style={styles.publicRow}>
+              <ThemedView style={styles.publicInfo}>
+                <ThemedText size="sm" semibold>
+                  {item.titre}
+                </ThemedText>
+                <ThemedText size="xs" tertiary>
                   {item.nb_questions} questions
                   {item.auteur ? ` · ${item.auteur}` : ''}
-                </Text>
-              </View>
+                </ThemedText>
+              </ThemedView>
               <Button
                 title="Prochain duel"
                 onPress={() => assignQuestionnaireToNext(item.localId)}
               />
-            </View>
+            </ThemedView>
           ))}
-        </View>
+        </ThemedView>
       ) : null}
-    </View>
+    </ThemedCard>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  round: {
-    fontSize: 14,
-    color: '#334155',
-  },
-  count: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#16a34a',
-  },
-  missing: {
-    color: '#dc2626',
-  },
-  warning: {
-    fontSize: 13,
-    color: '#b45309',
-    fontStyle: 'italic',
-  },
-  ok: {
-    fontSize: 13,
-    color: '#16a34a',
   },
   publicsBlock: {
     marginTop: 12,
@@ -142,14 +123,5 @@ const styles = StyleSheet.create({
   },
   publicInfo: {
     flex: 1,
-  },
-  publicTitre: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  publicMeta: {
-    fontSize: 12,
-    color: '#64748b',
   },
 });

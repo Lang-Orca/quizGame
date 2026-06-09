@@ -1,15 +1,19 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import type {Joueur} from '@/types/joueur';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {useColors} from '@/ui/theme';
 
 interface Props {
   players: Joueur[];
 }
 
 export function PlayerList({players}: Props) {
+  const colors = useColors();
+
   if (players.length === 0) {
-    return <Text style={styles.empty}>Aucun joueur connecté.</Text>;
+    return <ThemedText tertiary>Aucun joueur connecté.</ThemedText>;
   }
 
   return (
@@ -17,9 +21,12 @@ export function PlayerList({players}: Props) {
       {players.map(player => (
         <View key={player.id} style={styles.row}>
           <View
-            style={[styles.dot, player.connected ? styles.on : styles.off]}
+            style={[
+              styles.dot,
+              {backgroundColor: player.connected ? colors.onlineDot : colors.offlineDot},
+            ]}
           />
-          <Text style={styles.pseudo}>{player.pseudo}</Text>
+          <ThemedText size="base">{player.pseudo}</ThemedText>
         </View>
       ))}
     </View>
@@ -30,10 +37,6 @@ const styles = StyleSheet.create({
   container: {
     gap: 8,
   },
-  empty: {
-    fontStyle: 'italic',
-    color: '#64748b',
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -43,15 +46,5 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-  },
-  on: {
-    backgroundColor: '#16a34a',
-  },
-  off: {
-    backgroundColor: '#94a3b8',
-  },
-  pseudo: {
-    fontSize: 16,
-    color: '#1e293b',
   },
 });

@@ -3,11 +3,11 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
-  Text,
-  View,
 } from 'react-native';
 
 import {PlayerList} from '@/ui/components/PlayerList';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
 import {useClient} from '@/ui/client/ClientContext';
 
 export function OnlineLobbyScreen() {
@@ -15,24 +15,26 @@ export function OnlineLobbyScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Partie rejointe</Text>
-      <Text style={styles.subtitle}>
+      <ThemedText size="xxl" bold>
+        Partie rejointe
+      </ThemedText>
+      <ThemedText secondary>
         Connecté en tant que {state.pseudo || '...'}
-      </Text>
+      </ThemedText>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
+      <ThemedView secondary style={styles.section}>
+        <ThemedText semibold>
           Joueurs ({state.players.length})
-        </Text>
+        </ThemedText>
         <PlayerList players={state.players} />
-      </View>
+      </ThemedView>
 
-      <View style={styles.waiting}>
+      <ThemedView style={styles.waiting}>
         <ActivityIndicator />
-        <Text style={styles.waitingText}>
+        <ThemedText tertiary>
           En attente que l'hôte démarre le tournoi…
-        </Text>
-      </View>
+        </ThemedText>
+      </ThemedView>
     </ScrollView>
   );
 }
@@ -42,31 +44,14 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#475569',
-  },
   section: {
-    backgroundColor: '#f1f5f9',
     borderRadius: 12,
     padding: 16,
     gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
   },
   waiting: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  waitingText: {
-    fontStyle: 'italic',
-    color: '#64748b',
   },
 });

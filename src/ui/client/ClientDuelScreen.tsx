@@ -1,10 +1,12 @@
 import React from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {ScrollView, StyleSheet} from 'react-native';
 
 import {QUESTIONS_PAR_DUEL, TIMER_DEFAULT_SECONDS} from '@/constants';
 import {OptionButton} from '@/ui/components/OptionButton';
 import {QuestionCard} from '@/ui/components/QuestionCard';
 import {TimerBar} from '@/ui/components/TimerBar';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
 
 import {useClient} from './ClientContext';
 
@@ -16,9 +18,9 @@ export function ClientDuelScreen() {
 
   if (!question) {
     return (
-      <View style={styles.center}>
-        <Text>En attente de la question…</Text>
-      </View>
+      <ThemedView style={styles.center}>
+        <ThemedText>En attente de la question…</ThemedText>
+      </ThemedView>
     );
   }
 
@@ -39,7 +41,7 @@ export function ClientDuelScreen() {
         texte={question.texte}
       />
 
-      <View style={styles.options}>
+      <ThemedView style={styles.options}>
         {question.options.map((option, i) => (
           <OptionButton
             key={i}
@@ -51,18 +53,22 @@ export function ClientDuelScreen() {
             onPress={() => submitAnswer(option)}
           />
         ))}
-      </View>
+      </ThemedView>
 
       {isReveal ? (
-        <Text style={styles.info}>
+        <ThemedText semibold center>
           {state.selectedOption === optionCorrecte
             ? 'Bonne réponse !'
             : 'Mauvaise réponse.'}
-        </Text>
+        </ThemedText>
       ) : aRepondu ? (
-        <Text style={styles.info}>Réponse envoyée. En attente du reveal…</Text>
+        <ThemedText center secondary>
+          Réponse envoyée. En attente du reveal…
+        </ThemedText>
       ) : (
-        <Text style={styles.info}>Sélectionnez votre réponse.</Text>
+        <ThemedText center secondary>
+          Sélectionnez votre réponse.
+        </ThemedText>
       )}
     </ScrollView>
   );
@@ -80,11 +86,5 @@ const styles = StyleSheet.create({
   },
   options: {
     gap: 10,
-  },
-  info: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#334155',
-    textAlign: 'center',
   },
 });

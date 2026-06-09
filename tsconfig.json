@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "target": "esnext",
     "useDefineForClassFields": true,
     "lib": ["esnext", "dom", "dom.iterable"],

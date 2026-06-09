@@ -4,16 +4,18 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
-  View,
 } from 'react-native';
 
 import {WS_PORT} from '@/constants';
 import {pickLanAddress, parseHostAddress} from '@/utils/network';
 import {useLanClient} from '@/ui/lan/LanClientContext';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
+import {useColors} from '@/ui/theme';
 
 export function ScanLanScreen() {
+  const colors = useColors();
   const {state, salons, startScan, connect} = useLanClient();
   const [pseudo, setPseudo] = useState('');
   const [ip, setIp] = useState('');
@@ -33,33 +35,50 @@ export function ScanLanScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Rejoindre un salon LAN</Text>
+      <ThemedText size="xxl" bold>
+        Rejoindre un salon LAN
+      </ThemedText>
 
-      <Text style={styles.label}>Votre pseudo</Text>
+      <ThemedText size="sm" semibold secondary>
+        Votre pseudo
+      </ThemedText>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+        ]}
         value={pseudo}
         onChangeText={setPseudo}
         placeholder="Ex : Marco"
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="words"
       />
 
-      <View style={styles.actions}>
+      <ThemedView style={styles.actions}>
         <Button title="Scanner le réseau" onPress={startScan} />
-      </View>
+      </ThemedView>
 
-      <Text style={styles.section}>Salons détectés</Text>
+      <ThemedText semibold size="base" secondary style={styles.section}>
+        Salons détectés
+      </ThemedText>
       {salons.length === 0 ? (
-        <Text style={styles.hint}>
+        <ThemedText tertiary>
           Aucun salon détecté. Assurez-vous d'être sur le même WiFi, ou
           utilisez la saisie IP ci-dessous.
-        </Text>
+        </ThemedText>
       ) : (
         salons.map(salon => (
           <Pressable
             key={salon.name}
             disabled={!pseudoPret}
-            style={[styles.salon, !pseudoPret && styles.salonDisabled]}
+            style={({pressed}) => [
+              styles.salon,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.cardBorder,
+                opacity: !pseudoPret ? 0.5 : pressed ? 0.8 : 1,
+              },
+            ]}
             onPress={() =>
               connect(
                 pickLanAddress(salon.addresses) ?? salon.host,
@@ -67,24 +86,32 @@ export function ScanLanScreen() {
                 pseudo.trim(),
               )
             }>
-            <Text style={styles.salonNom}>{salon.nom ?? salon.name}</Text>
+            <ThemedText semibold>{salon.nom ?? salon.name}</ThemedText>
             {salon.code ? (
-              <Text style={styles.salonCode}>Code : {salon.code}</Text>
+              <ThemedText size="xs" tertiary>
+                Code : {salon.code}
+              </ThemedText>
             ) : null}
           </Pressable>
         ))
       )}
 
-      <Text style={styles.section}>Saisie manuelle (fallback)</Text>
+      <ThemedText semibold size="base" secondary style={styles.section}>
+        Saisie manuelle (fallback)
+      </ThemedText>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+        ]}
         value={ip}
         onChangeText={setIp}
         placeholder="192.168.1.42"
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
         keyboardType="numbers-and-punctuation"
       />
-      {ipError ? <Text style={styles.error}>{ipError}</Text> : null}
+      {ipError ? <ThemedText error>{ipError}</ThemedText> : null}
       <Button
         title="Rejoindre par IP"
         onPress={rejoindreIp}
@@ -92,9 +119,9 @@ export function ScanLanScreen() {
       />
 
       {!pseudoPret ? (
-        <Text style={styles.hint}>Saisissez un pseudo pour rejoindre.</Text>
+        <ThemedText tertiary>Saisissez un pseudo pour rejoindre.</ThemedText>
       ) : null}
-      {state.error ? <Text style={styles.error}>{state.error}</Text> : null}
+      {state.error ? <ThemedText error>{state.error}</ThemedText> : null}
     </ScrollView>
   );
 }
@@ -104,24 +131,11 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
-  },
   section: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#334155',
     marginTop: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
@@ -130,28 +144,8 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   salon: {
-    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 10,
     padding: 14,
-  },
-  salonDisabled: {
-    opacity: 0.5,
-  },
-  salonNom: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  salonCode: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  hint: {
-    fontStyle: 'italic',
-    color: '#64748b',
-  },
-  error: {
-    color: '#dc2626',
   },
 });

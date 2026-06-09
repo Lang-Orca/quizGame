@@ -4,20 +4,22 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 import {PublicCatalogRepository} from '@/data/sqlite/PublicCatalogRepository';
 import {PublicCatalogService} from '@/services/PublicCatalogService';
 import type {PublicQuestionnaireSummary} from '@/types/catalog';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
+import {useColors, borderRadius} from '@/ui/theme';
 
 const service = new PublicCatalogService();
 const cacheRepo = new PublicCatalogRepository();
 
 export function PublicListScreen() {
+  const colors = useColors();
   const [items, setItems] = useState<PublicQuestionnaireSummary[]>([]);
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -71,16 +73,22 @@ export function PublicListScreen() {
   }, [items, recherche]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Catalogue public</Text>
+    <ThemedView style={styles.container}>
+      <ThemedText size="xxl" bold>
+        Catalogue public
+      </ThemedText>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+        ]}
         value={recherche}
         onChangeText={setRecherche}
         placeholder="Rechercher un questionnaire…"
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <ThemedText error>{error}</ThemedText> : null}
 
       <FlatList
         data={filtres}
@@ -90,40 +98,53 @@ export function PublicListScreen() {
         }
         ListEmptyComponent={
           loading ? null : (
-            <Text style={styles.empty}>Aucun questionnaire public.</Text>
+            <ThemedText tertiary center style={styles.empty}>
+              Aucun questionnaire public.
+            </ThemedText>
           )
         }
+        contentContainerStyle={styles.list}
         renderItem={({item}) => {
           const estTelecharge = downloaded.has(item.firebaseId);
           const enCours = downloadingId === item.firebaseId;
           return (
-            <View style={styles.card}>
-              <View style={styles.info}>
-                <Text style={styles.cardTitle}>{item.titre}</Text>
-                <Text style={styles.meta}>
+            <ThemedView
+              style={[
+                styles.card,
+                {backgroundColor: colors.surface, borderColor: colors.cardBorder},
+              ]}>
+              <ThemedView style={styles.info}>
+                <ThemedText size="sm" semibold>
+                  {item.titre}
+                </ThemedText>
+                <ThemedText size="xs" tertiary>
                   {item.nb_questions} questions
                   {item.auteur ? ` · ${item.auteur}` : ''}
-                </Text>
-              </View>
+                </ThemedText>
+              </ThemedView>
               {estTelecharge ? (
-                <Text style={styles.done}>Téléchargé</Text>
+                <ThemedText success semibold>
+                  Téléchargé
+                </ThemedText>
               ) : (
                 <TouchableOpacity
-                  style={styles.button}
+                  style={[styles.button, {backgroundColor: colors.primary}]}
                   disabled={enCours}
                   onPress={() => telecharger(item)}>
                   {enCours ? (
-                    <ActivityIndicator color="#ffffff" />
+                    <ActivityIndicator color={colors.textInverse} />
                   ) : (
-                    <Text style={styles.buttonText}>Télécharger</Text>
+                    <ThemedText inverse semibold size="sm">
+                      Télécharger
+                    </ThemedText>
                   )}
                 </TouchableOpacity>
               )}
-            </View>
+            </ThemedView>
           );
         }}
       />
-    </View>
+    </ThemedView>
   );
 }
 
@@ -133,33 +154,23 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 12,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
   },
-  error: {
-    color: '#dc2626',
-  },
   empty: {
-    fontStyle: 'italic',
-    color: '#64748b',
-    textAlign: 'center',
     marginTop: 24,
+  },
+  list: {
+    paddingBottom: 24,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
@@ -168,27 +179,9 @@ const styles = StyleSheet.create({
   info: {
     flex: 1,
   },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  meta: {
-    fontSize: 12,
-    color: '#64748b',
-  },
   button: {
-    backgroundColor: '#2563eb',
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
     paddingVertical: 8,
     paddingHorizontal: 14,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  done: {
-    color: '#16a34a',
-    fontWeight: '600',
   },
 });

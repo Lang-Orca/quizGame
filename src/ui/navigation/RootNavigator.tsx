@@ -1,6 +1,7 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {useTheme} from 'react-native-paper';
 
 import {HostGameScreen} from '@/ui/host/HostGameScreen';
 import {LanClientScreen} from '@/ui/lan/LanClientScreen';
@@ -20,9 +21,14 @@ import type {RootStackParamList} from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const theme = useTheme();
+
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator id="root"
+        screenOptions={{
+          contentStyle: {backgroundColor: theme.colors.background},
+        }}>
         <Stack.Screen
           name="Home"
           component={HomeScreen}

@@ -1,5 +1,8 @@
 import React from 'react';
-import {Pressable, StyleSheet, Text} from 'react-native';
+import {Pressable, StyleSheet} from 'react-native';
+
+import {ThemedText} from '@/ui/components/ThemedText';
+import {useColors} from '@/ui/theme';
 
 interface Props {
   label: string;
@@ -18,18 +21,35 @@ export function OptionButton({
   disabled,
   onPress,
 }: Props) {
+  const colors = useColors();
+
+  const bg = correct
+    ? colors.successLight
+    : selected
+      ? colors.primaryLight
+      : colors.card;
+
+  const border = correct
+    ? colors.success
+    : selected
+      ? colors.primary
+      : colors.inputBorder;
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={[
         styles.button,
-        selected && styles.selected,
-        correct && styles.correct,
+        {backgroundColor: bg, borderColor: border},
         disabled && !correct && !selected && styles.disabled,
       ]}>
-      <Text style={styles.letter}>{letter}</Text>
-      <Text style={styles.label}>{label}</Text>
+      <ThemedText bold size="lg" style={styles.letter}>
+        {letter}
+      </ThemedText>
+      <ThemedText size="lg" style={styles.label}>
+        {label}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -39,33 +59,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#cbd5e1',
     borderRadius: 12,
     padding: 14,
     gap: 12,
-    backgroundColor: '#ffffff',
-  },
-  selected: {
-    borderColor: '#2563eb',
-    backgroundColor: '#dbeafe',
-  },
-  correct: {
-    borderColor: '#16a34a',
-    backgroundColor: '#dcfce7',
   },
   disabled: {
     opacity: 0.6,
   },
   letter: {
-    fontSize: 18,
-    fontWeight: '700',
     width: 24,
     textAlign: 'center',
-    color: '#1e293b',
   },
   label: {
-    fontSize: 16,
     flexShrink: 1,
-    color: '#1e293b',
   },
 });

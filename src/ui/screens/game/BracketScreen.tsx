@@ -1,13 +1,17 @@
 import React from 'react';
-import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Button, ScrollView, StyleSheet, View} from 'react-native';
 
 import {getMatchsEnAttente} from '@/domain/bracket';
 import {BracketView} from '@/ui/components/BracketView';
 import {TeamCard} from '@/ui/components/TeamCard';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
 import {useHostGame} from '@/ui/host/HostGameContext';
 import {QuestionnaireSelectScreen} from '@/ui/screens/host/QuestionnaireSelectScreen';
+import {useColors} from '@/ui/theme';
 
 export function BracketScreen() {
+  const colors = useColors();
   const {
     state,
     nextMatchNeedsQuestionnaire,
@@ -19,7 +23,7 @@ export function BracketScreen() {
   if (!state.bracket) {
     return (
       <View style={styles.center}>
-        <Text>Bracket non disponible.</Text>
+        <ThemedText>Bracket non disponible.</ThemedText>
       </View>
     );
   }
@@ -29,7 +33,9 @@ export function BracketScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Tournoi</Text>
+      <ThemedText size="xxl" bold>
+        Tournoi
+      </ThemedText>
 
       <View style={styles.teams}>
         {state.equipes.map(equipe => (
@@ -37,30 +43,32 @@ export function BracketScreen() {
         ))}
       </View>
 
-      <Text style={styles.section}>Arbre du tournoi</Text>
+      <ThemedText semibold size="base" secondary>
+        Arbre du tournoi
+      </ThemedText>
       <BracketView bracket={state.bracket} equipes={state.equipes} />
 
       <QuestionnaireSelectScreen />
 
       {prochain ? (
         nextMatchNeedsQuestionnaire ? (
-          <View style={styles.warnBox}>
-            <Text style={styles.warnText}>
+          <ThemedView style={[styles.warnBox, {backgroundColor: colors.warningLight}]}>
+            <ThemedText size="sm" warning>
               Le prochain duel n'a pas encore de questionnaire.
-            </Text>
+            </ThemedText>
             <Button
               title="Préparer le questionnaire public"
               onPress={prepareNextDuelQuestionnaire}
             />
-          </View>
+          </ThemedView>
         ) : (
           <Button title="Démarrer le duel suivant" onPress={startNextMatch} />
         )
       ) : (
-        <Text style={styles.hint}>Tous les duels sont terminés.</Text>
+        <ThemedText tertiary>Tous les duels sont terminés.</ThemedText>
       )}
 
-      {startError ? <Text style={styles.error}>{startError}</Text> : null}
+      {startError ? <ThemedText error>{startError}</ThemedText> : null}
     </ScrollView>
   );
 }
@@ -75,36 +83,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  section: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#334155',
-  },
   teams: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
   },
-  hint: {
-    fontStyle: 'italic',
-    color: '#64748b',
-  },
   warnBox: {
     gap: 10,
-    backgroundColor: '#fef3c7',
     borderRadius: 12,
     padding: 14,
-  },
-  warnText: {
-    fontSize: 14,
-    color: '#92400e',
-  },
-  error: {
-    color: '#dc2626',
-    fontWeight: '600',
   },
 });

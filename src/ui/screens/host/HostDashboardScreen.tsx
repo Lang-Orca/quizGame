@@ -1,8 +1,10 @@
 import React from 'react';
-import {Button, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Button, ScrollView, StyleSheet} from 'react-native';
 
 import {MIN_JOUEURS} from '@/constants';
 import {PlayerList} from '@/ui/components/PlayerList';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
 import {useHostGame} from '@/ui/host/HostGameContext';
 
 export function HostDashboardScreen() {
@@ -11,28 +13,30 @@ export function HostDashboardScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Salon — {state.sessionId ?? '...'}</Text>
-      <Text style={styles.subtitle}>
+      <ThemedText size="xxl" bold>
+        Salon — {state.sessionId ?? '...'}
+      </ThemedText>
+      <ThemedText secondary>
         {state.players.length} joueur(s) connecté(s)
-      </Text>
+      </ThemedText>
 
-      <View style={styles.section}>
+      <ThemedView secondary style={styles.section}>
         <PlayerList players={state.players} />
-      </View>
+      </ThemedView>
 
-      <View style={styles.actions}>
+      <ThemedView style={styles.actions}>
         <Button title="Ajouter un joueur (debug)" onPress={addFakePlayer} />
         <Button
           title="Boucler le salon"
           onPress={lockAndPrepare}
           disabled={!canLock}
         />
-      </View>
+      </ThemedView>
 
       {!canLock ? (
-        <Text style={styles.hint}>
+        <ThemedText warning>
           Il faut au moins {MIN_JOUEURS} joueurs pour démarrer.
-        </Text>
+        </ThemedText>
       ) : null}
     </ScrollView>
   );
@@ -43,24 +47,11 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#475569',
-  },
   section: {
-    backgroundColor: '#f1f5f9',
     borderRadius: 12,
     padding: 16,
   },
   actions: {
     gap: 12,
-  },
-  hint: {
-    color: '#b45309',
-    fontStyle: 'italic',
   },
 });

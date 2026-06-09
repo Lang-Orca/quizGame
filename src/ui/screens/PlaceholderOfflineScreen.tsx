@@ -1,19 +1,23 @@
 import React from 'react';
-import {Button, StyleSheet, Text, View} from 'react-native';
+import {Button, StyleSheet} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 
 import type {RootStackParamList} from '@/ui/navigation/types';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PlaceholderOffline'>;
 
 export function PlaceholderOfflineScreen({navigation}: Props) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Mode Offline (LAN)</Text>
-      <Text style={styles.text}>
+    <ThemedView style={styles.container}>
+      <ThemedText size="xxl" bold>
+        Mode Offline (LAN)
+      </ThemedText>
+      <ThemedText size="base" secondary>
         Hébergez un salon sur votre WiFi local, ou rejoignez un salon proche.
-      </Text>
-      <View style={styles.buttons}>
+      </ThemedText>
+      <ThemedView style={styles.buttons}>
         <Button
           title="Héberger un salon LAN"
           onPress={() => navigation.navigate('CreateLan')}
@@ -26,8 +30,8 @@ export function PlaceholderOfflineScreen({navigation}: Props) {
           title="Partie locale (debug)"
           onPress={() => navigation.navigate('HostGame')}
         />
-      </View>
-    </View>
+      </ThemedView>
+    </ThemedView>
   );
 }
 
@@ -36,15 +40,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  text: {
-    fontSize: 16,
-    lineHeight: 24,
   },
   buttons: {
     marginTop: 24,

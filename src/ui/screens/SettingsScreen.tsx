@@ -3,16 +3,19 @@ import {
   Button,
   ScrollView,
   StyleSheet,
-  Text,
   TextInput,
-  View,
 } from 'react-native';
 
 import {ApiKeyStore} from '@/services/ApiKeyStore';
+import {ThemedText} from '@/ui/components/ThemedText';
+import {ThemedView} from '@/ui/components/ThemedView';
+import {ThemedCard} from '@/ui/components/ThemedCard';
+import {useColors} from '@/ui/theme';
 
 const store = new ApiKeyStore();
 
 export function SettingsScreen() {
+  const colors = useColors();
   const [apiKey, setApiKey] = useState('');
   const [hasKey, setHasKey] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -40,37 +43,45 @@ export function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Paramètres</Text>
+      <ThemedText size="xxl" bold>
+        Paramètres
+      </ThemedText>
 
-      <View style={styles.card}>
-        <Text style={styles.section}>Clé API Google Gemini</Text>
-        <Text style={styles.help}>
+      <ThemedCard style={styles.card}>
+        <ThemedText bold size="base">
+          Clé API Google Gemini
+        </ThemedText>
+        <ThemedText size="sm" tertiary>
           La clé est stockée dans le trousseau sécurisé de l'appareil
           (Keychain/Keystore) et sert à générer des questions depuis un PDF.
-        </Text>
-        <Text style={[styles.statut, hasKey ? styles.ok : styles.missing]}>
+        </ThemedText>
+        <ThemedText size="sm" semibold success={hasKey} warning={!hasKey}>
           {hasKey ? 'Une clé est configurée.' : 'Aucune clé configurée.'}
-        </Text>
+        </ThemedText>
 
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {borderColor: colors.inputBorder, color: colors.text, backgroundColor: colors.card},
+          ]}
           value={apiKey}
           onChangeText={setApiKey}
           placeholder="Collez votre clé API Gemini"
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry
         />
 
-        <View style={styles.actions}>
+        <ThemedView style={styles.actions}>
           <Button title="Enregistrer la clé" onPress={enregistrer} />
           {hasKey ? (
-            <Button title="Supprimer la clé" color="#dc2626" onPress={supprimer} />
+            <Button title="Supprimer la clé" color={colors.error} onPress={supprimer} />
           ) : null}
-        </View>
+        </ThemedView>
 
-        {message ? <Text style={styles.message}>{message}</Text> : null}
-      </View>
+        {message ? <ThemedText secondary>{message}</ThemedText> : null}
+      </ThemedCard>
     </ScrollView>
   );
 }
@@ -80,51 +91,16 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
   card: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
     gap: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  section: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  help: {
-    fontSize: 13,
-    color: '#64748b',
-    lineHeight: 18,
-  },
-  statut: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  ok: {
-    color: '#16a34a',
-  },
-  missing: {
-    color: '#b45309',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
     borderRadius: 10,
     padding: 12,
     fontSize: 15,
-    backgroundColor: '#ffffff',
   },
   actions: {
     gap: 10,
-  },
-  message: {
-    fontSize: 13,
-    color: '#334155',
-    fontStyle: 'italic',
   },
 });
